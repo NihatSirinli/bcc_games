@@ -1,18 +1,19 @@
 package com.bcc.games.BCCGames.controller;
 
-import com.bcc.games.BCCGames.entity.Game;
+import com.bcc.games.BCCGames.model.dto.game.GameRequest;
+import com.bcc.games.BCCGames.model.dto.game.GameResponse;
+import com.bcc.games.BCCGames.model.entity.Game;
 import com.bcc.games.BCCGames.service.GameService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 public class GameController {
     private final GameService gameService;
-
-    public GameController(GameService gameService) {
-        this.gameService = gameService;
-    }
 
     @GetMapping("/games")
     public List<Game> getAll() {
@@ -20,7 +21,7 @@ public class GameController {
     }
 
     @PostMapping("/games")
-    public Game getAll(@RequestBody Game game) {
+    public GameResponse getAll(@Valid @RequestBody GameRequest game) {
         return gameService.createGame(game);
     }
 
@@ -28,4 +29,9 @@ public class GameController {
     public void delete(@PathVariable Long id) {
         gameService.deleteById(id);
     }
+
+//    // Query Methods
+//    @GetMapping("/games/{title}")
+//    public List<Game> getAllByTitle(@RequestParam String title) { return gameService.getByTitle(title); }
+
 }

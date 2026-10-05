@@ -1,43 +1,64 @@
 package com.bcc.games.BCCGames.service;
 
-import com.bcc.games.BCCGames.entity.Game;
-import com.bcc.games.BCCGames.entity.Studio;
+import com.bcc.games.BCCGames.model.dto.game.GameRequest;
+import com.bcc.games.BCCGames.model.dto.game.GameResponse;
+import com.bcc.games.BCCGames.model.entity.Game;
+import com.bcc.games.BCCGames.model.entity.Studio;
 import com.bcc.games.BCCGames.repository.GameRepository;
 import com.bcc.games.BCCGames.repository.StudioRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class GameService {
     private final GameRepository gameRepository;
     private final StudioRepository studioRepository;
 
-    public GameService(GameRepository gameRepository, StudioRepository studioRepository){
-        this.gameRepository = gameRepository;
-        this.studioRepository = studioRepository;
-    }
-
     public List<Game> getAllGames(){
         return gameRepository.findAll();
     }
 
-    public Game createGame(Game game){
-        Long studioId = game.getStudio().getId();
+    // DTO -> Entity
+    public GameResponse createGame(GameRequest gameRequest){
+        Long studioId = gameRequest.getStudioId();
 
         Studio studio = studioRepository
-                .findById(studioId)
+                .findById(gameRequest.getStudioId())
                 .orElseThrow(() -> new RuntimeException("Not found game"));
 
-        game.setStudio(studio);
-        game.setTitle(game.getTitle());
-        game.setGenre(game.getGenre());
-        game.setPrice(game.getPrice());
+        Game game = new Game();
 
-        return gameRepository.save(game);
+        game.setTitle(gameRequest.getTitle());
+        game.setGenre(gameRequest.getGenre());
+        game.setPrice(gameRequest.getPrice());
+        game.setStudio(studio);
+
+        //convertToResponse Entity -> DTO(Data Transfer Object)
+        Game savedGame =  gameRepository.save(game);
+        return convertToResponse(savedGame);
     }
 
     public void deleteById(Long id){
         gameRepository.deleteById(id);
     }
+
+    // Query Methods
+//    public List<Game> getByTitle(String title) {
+//        return gameRepository.findByTitleContainingIgnoreCase(title);
+//    }
+
+    //convertToResponse Entity -> DTO(Data Transfer Object)
+    private GameResponse convertToResponse(Game game){
+        return new GameResponse(
+                game.getId(),
+                game.getTitle(),
+                game.getGenre(),
+                game.getPrice(),
+                game.getStudio().getName()
+        );
+    }
+
 }
